@@ -26,4 +26,7 @@ class Sphere:
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
+        # The multiplicative inverse of the radius.
+        # Used to make calculations faster since multiplication often is faster than division
+        self.inv_radius = 1.0 / radius
 
