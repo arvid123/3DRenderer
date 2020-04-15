@@ -1,3 +1,11 @@
+#from PIL import Image
+#from numpy import asarray
+#img = Image.new(mode = "RGB", size = (3, 4), color = 'red')
+#img2 = Image.fromarray(asarray(img), "RGB")
+#print(asarray(img))
+#img2.save("red3x4.png")
+
+from numpy import array
 import util
 
 # A ray is similar to a line except that it doesn't extend behind the origin.
@@ -9,8 +17,13 @@ import util
 # t > 0
 # 
 # Where t is an independent parameter.
-
 class Ray:
     def __init__(self, origin, direction):
         self.origin = origin
         self.direction = util.normalize(direction)
+
+class Sphere:
+    def __init__(self, center, radius):
+        self.center = center
+        self.radius = radius
+
