@@ -29,4 +29,7 @@ class Sphere:
         # The multiplicative inverse of the radius.
         # Used to make calculations faster since multiplication often is faster than division
         self.inv_radius = 1.0 / radius
+        # The square of the radius.
+        # Precomputed for performance reasons.
+        self.square_radius = radius * radius 
 
