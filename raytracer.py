@@ -6,7 +6,25 @@
 #img2.save("red3x4.png")
 
 from numpy import array
-import util
+from util import square
+from util import normalize
+from math import sqrt
+
+class Vector:
+    def __init__(self, x, y, z):
+        self.__vec_array = array([x, y, z])
+    
+    @property
+    def x(self):
+        return self.__vec_array[0]
+    
+    @property
+    def y(self):
+        return self.__vec_array[1]
+
+    @property
+    def z(self):
+        return self.__vec_array[2]
 
 # A ray is similar to a line except that it doesn't extend behind the origin.
 # A ray is defined as the set of points described by these equations:
