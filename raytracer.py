@@ -47,6 +47,22 @@ class Vector:
     @property
     def z(self):
         return self.__vec_array[2]
+    
+    @property
+    def vec_array(self):
+        return self.__vec_array
+
+    def __add__(self, other):
+        return self.vec_array + other.vec_array
+
+    def __sub__(self, other):
+        return self.vec_array - other.vec_array
+    
+    def __mul__(self, other):
+        return self.vec_array * other.vec_array
+
+    def __truediv__(self, other):
+        return self.vec_array / other.vec_array
 
 # A ray is similar to a line except that it doesn't extend behind the origin.
 # A ray is defined as the set of points described by these equations:
@@ -99,3 +115,8 @@ class Sphere:
             return Vector(ray.origin.x + ray.direction.x * t1,
                           ray.origin.y + ray.direction.y * t1,
                           ray.origin.z + ray.direction.z * t1)
+
+r = Ray(Vector(1, -2, -1), Vector(1, 2, 4))
+s = Sphere(Vector(3, 0, 5), 3)
+
+print(s.intersect(r))
