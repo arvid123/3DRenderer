@@ -5,4 +5,7 @@ def normalize(vec):
     if length == 0:
         return vec
     else:
-        return vec / length 
+        return vec / length
+
+def square(x):
+    return x * x
