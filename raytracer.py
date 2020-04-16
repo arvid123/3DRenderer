@@ -33,8 +33,8 @@ from util import normalize
 from math import sqrt
 
 class Vector:
-    def __init__(self, x, y, z):
-        self.__vec_array = array([x, y, z])
+    def __init__(self, vec_array):
+        self.__vec_array = vec_array
     
     @property
     def x(self):
@@ -53,16 +53,19 @@ class Vector:
         return self.__vec_array
 
     def __add__(self, other):
-        return self.vec_array + other.vec_array
+        return Vector(self.vec_array + other.vec_array)
 
     def __sub__(self, other):
-        return self.vec_array - other.vec_array
+        return Vector(self.vec_array - other.vec_array)
     
     def __mul__(self, other):
-        return self.vec_array * other.vec_array
+        return Vector(self.vec_array * other)
 
     def __truediv__(self, other):
-        return self.vec_array / other.vec_array
+        return Vector(self.vec_array / other)
+
+    def __str__(self):
+        return "(" + str(self.__vec_array[0]) + ", " + str(self.__vec_array[1]) + ", " + str(self.__vec_array[2]) + ")"
 
 # A ray is similar to a line except that it doesn't extend behind the origin.
 # A ray is defined as the set of points described by these equations:
@@ -107,16 +110,19 @@ class Sphere:
         t0 = (-b -sqrt_discriminant) / 2
         # Intersection is not behind the origin of the ray
         if t0 >= 0:
-            return Vector(ray.origin.x + ray.direction.x * t0,
+            return Vector(array([ray.origin.x + ray.direction.x * t0,
                           ray.origin.y + ray.direction.y * t0,
-                          ray.origin.z + ray.direction.z * t0)
+                          ray.origin.z + ray.direction.z * t0]))
         else:
             t1 = (-b +sqrt_discriminant) / 2
-            return Vector(ray.origin.x + ray.direction.x * t1,
+            return Vector(array([ray.origin.x + ray.direction.x * t1,
                           ray.origin.y + ray.direction.y * t1,
-                          ray.origin.z + ray.direction.z * t1)
+                          ray.origin.z + ray.direction.z * t1]))
+    
+    def normal_at(surface_point : Vector):
+        
 
-r = Ray(Vector(1, -2, -1), Vector(1, 2, 4))
-s = Sphere(Vector(3, 0, 5), 3)
+r = Ray(Vector(array([1, -2, -1])), Vector(array([1, 2, 4])))
+s = Sphere(Vector(array([3, 0, 5])), 3)
 
 print(s.intersect(r))
