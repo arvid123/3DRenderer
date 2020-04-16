@@ -36,18 +36,44 @@ class Vector:
 # 
 # Where t is an independent parameter.
 class Ray:
-    def __init__(self, origin, direction):
+    def __init__(self, origin : Vector, direction : Vector):
         self.origin = origin
-        self.direction = util.normalize(direction)
+        self.direction = normalize(direction)
 
 class Sphere:
-    def __init__(self, center, radius):
+    def __init__(self, center : Vector, radius : float):
         self.center = center
         self.radius = radius
-        # The multiplicative inverse of the radius.
         # Used to make calculations faster since multiplication often is faster than division
         self.inv_radius = 1.0 / radius
-        # The square of the radius.
         # Precomputed for performance reasons.
         self.square_radius = radius * radius 
 
+    # The "pure mathematical" way of finding the intersection points.
+    # The equations for the ray and the sphere are combined and then solved to find up to two
+    # intersection points, than the closest one is selected (if it exists).
+    # t0 and t1 are the intersection points, t1 is only computed if t0 is found to be negative (and therefore invalid).
+    # For a more in-depth look at the math see p. 35 of An Introduction to Ray Tracing by Morgan Kaufmann
+    def intersect(self, ray):
+        b = 2 * (ray.direction.x * (ray.origin.x - self.center.x) + 
+         ray.direction.y * (ray.origin.y - self.center.y) + 
+         ray.direction.z * (ray.origin.z - self.center.z))
+        c = square(ray.origin.x - self.center.x) + square(ray.origin.y - self.center.y) + square(ray.origin.z - self.center.z) - self.square_radius
+        discriminant = square(b) - 4 * c
+        # The ray misses the sphere
+        if discriminant < 0:
+            return None
+        # The square root of the discriminant is precomputed since
+        # taking the square root often is an expensive operation.
+        sqrt_discriminant = sqrt(discriminant)
+        t0 = (-b -sqrt_discriminant) / 2
+        # Intersection is not behind the origin of the ray
+        if t0 >= 0:
+            return Vector(ray.origin.x + ray.direction.x * t0,
+                          ray.origin.y + ray.direction.y * t0,
+                          ray.origin.z + ray.direction.z * t0)
+        else:
+            t1 = (-b +sqrt_discriminant) / 2
+            return Vector(ray.origin.x + ray.direction.x * t1,
+                          ray.origin.y + ray.direction.y * t1,
+                          ray.origin.z + ray.direction.z * t1)
