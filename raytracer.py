@@ -1,24 +1,5 @@
-# MIT License
-# 
-# Copyright (c) 2020 arvid123
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# This code and much of the comments are heavily inspired by the book "An Introduction to Raytracing" edited by Andrew S. Glassner
+# It is provided under this license https://creativecommons.org/licenses/by/4.0/
 
 #from PIL import Image
 #from numpy import asarray
@@ -28,6 +9,7 @@
 #img2.save("red3x4.png")
 
 from numpy import array
+from numpy import dot
 from util import square
 from util import normalize
 from math import sqrt
@@ -52,6 +34,9 @@ class Vector:
     def vec_array(self):
         return self.__vec_array
 
+    def dot(self, other):
+        return self.vec_array[0] * other.vec_array[0] + self.vec_array[1] * other.vec_array[1] + self.vec_array[2] * other.vec_array[2]
+
     def __add__(self, other):
         return Vector(self.vec_array + other.vec_array)
 
@@ -65,7 +50,7 @@ class Vector:
         return Vector(self.vec_array / other)
 
     def __str__(self):
-        return "(" + str(self.__vec_array[0]) + ", " + str(self.__vec_array[1]) + ", " + str(self.__vec_array[2]) + ")"
+        return "(" + str(self.vec_array[0]) + ", " + str(self.__vec_array[1]) + ", " + str(self.__vec_array[2]) + ")"
 
 # A ray is similar to a line except that it doesn't extend behind the origin.
 # A ray is defined as the set of points described by these equations:
@@ -90,12 +75,12 @@ class Sphere:
         # Precomputed for performance reasons.
         self.square_radius = radius * radius 
 
-    # The "pure mathematical" way of finding the intersection points.
+    # The "algebraic" way of finding the intersection points.
     # The equations for the ray and the sphere are combined and then solved to find up to two
     # intersection points, than the closest one is selected (if it exists).
     # t0 and t1 are the intersection points, t1 is only computed if t0 is found to be negative (and therefore invalid).
     # For a more in-depth look at the math see p. 35 of An Introduction to Ray Tracing by Morgan Kaufmann
-    def intersect(self, ray):
+    def alg_intersect(self, ray):
         b = 2 * (ray.direction.x * (ray.origin.x - self.center.x) + 
          ray.direction.y * (ray.origin.y - self.center.y) + 
          ray.direction.z * (ray.origin.z - self.center.z))
@@ -105,7 +90,7 @@ class Sphere:
         if discriminant < 0:
             return None
         # The square root of the discriminant is precomputed since
-        # taking the square root often is an expensive operation.
+        # taking the square root is often an expensive operation.
         sqrt_discriminant = sqrt(discriminant)
         t0 = (-b -sqrt_discriminant) / 2
         # Intersection is not behind the origin of the ray
@@ -118,11 +103,44 @@ class Sphere:
             return Vector(array([ray.origin.x + ray.direction.x * t1,
                           ray.origin.y + ray.direction.y * t1,
                           ray.origin.z + ray.direction.z * t1]))
-    
-    def normal_at(surface_point : Vector):
-        
+
+    # The "geometric" way of calculating the intersection between the sphere and a ray.
+    # Step 1: Check whether the ray origin is inside or outside the sphere
+    # Step 2: Determine the distance from the origin of the ray to the
+    # closest point to the center of the sphere that is still on the ray
+    # Step 3: If the ray is outside the sphere and faces away from it, the ray doesn't intersect the sphere
+    # Step 4: Check if the point closest to the sphere is inside the sphere
+    # Step 5: Calculate instersection point
+    def intersect(self, ray):
+        # Origin of ray to center of sphere vector (Origin to Center)
+        oc = self.center - ray.origin
+        # Length squared of oc
+        l2oc = oc.dot(oc)
+        outside = l2oc > self.square_radius
+        # t-value of point on the ray that is closest to the center of the sphere
+        # (t Closest Approach)
+        tca = oc.dot(ray.direction)
+        # Ray originates outside the sphere and is pointing away from it,
+        # therefore it cannot intersect it
+        if tca < 0 and outside:
+            return None
+        t2ca = square(tca)
+        # Check if the closest point is within the sphere, otherwise the ray misses
+        d2 = square(l2oc - t2ca)
+        t2hc = self.square_radius - d2
+        if t2hc < 0:
+            return None
+        t = tca + sqrt(t2hc)
+        if outside:
+            t = tca - sqrt(t2hc)
+        return Vector(array([ray.origin.x + ray.direction.x * t, ray.origin.y + ray.direction.y * t, ray.origin.z + ray.direction.z * t])) 
+
+
+    def unit_normal_at(self, surface_point : Vector):
+        return (surface_point - self.center) * self.inv_radius 
 
 r = Ray(Vector(array([1, -2, -1])), Vector(array([1, 2, 4])))
 s = Sphere(Vector(array([3, 0, 5])), 3)
 
 print(s.intersect(r))
+print(s.unit_normal_at(s.intersect(r)))
