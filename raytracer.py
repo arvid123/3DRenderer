@@ -70,7 +70,11 @@ class Ray:
 
 ### Components ###
 
-class SphereComponent:
+class Component:
+    def setID(self, id):
+        self.id = id
+
+class SphereComponent(Component):
     def __init__(self, center : Vector, radius : float):
         self.center = center
         self.radius = radius
@@ -82,11 +86,11 @@ class SphereComponent:
     def unit_normal_at(self, surface_point : Vector):
         return (surface_point - self.center) * self.inv_radius 
 
-class CameraComponent:
+class CameraComponent(Component):
     def _init_(self, fov):
         self.fov = fov
 
-class LightComponent:
+class LightComponent(Component):
     def __init__(self, intensity):
         self.intensity = intensity
 
@@ -151,6 +155,22 @@ def algRaySphereIntersection(sphere, ray):
         return Vector(array([ray.origin.x + ray.direction.x * t1,
                         ray.origin.y + ray.direction.y * t1,
                         ray.origin.z + ray.direction.z * t1]))
+
+### Data ###
+
+sphereList = []
+cameraList = []
+lightList = []
+materialList = []
+
+### Functions ###
+
+def createEntity(id, *components):
+    for component in components:
+        if issubclass(component, SphereComponent):
+            component.setID(id)
+            sphereList.append(component)
+
 
 #r = Ray(Vector(array([1, -2, -1])), Vector(array([1, 2, 4])))
 #s = Sphere(Vector(array([3, 0, 5])), 3)
